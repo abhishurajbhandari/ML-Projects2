@@ -1,0 +1,245 @@
+-- Create table
+CREATE TABLE IF NOT EXISTS sales(
+	invoice_id VARCHAR(30) NOT NULL PRIMARY KEY,
+    branch VARCHAR(5) NOT NULL,
+    city VARCHAR(30) NOT NULL,
+    customer_type VARCHAR(30) NOT NULL,
+    gender VARCHAR(30) NOT NULL,
+    product_line VARCHAR(100) NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    quantity INT NOT NULL,
+    tax_pct FLOAT(6,4) NOT NULL,
+    total DECIMAL(12, 4) NOT NULL,
+    date DATETIME NOT NULL,
+    time TIME NOT NULL,
+    payment VARCHAR(15) NOT NULL,
+    cogs DECIMAL(10,2) NOT NULL,
+    gross_margin_pct FLOAT(11,9),
+    gross_income DECIMAL(12, 4),
+    rating FLOAT(2, 1)
+);
+
+SELECT * FROM sales;
+
+#-----------#------------#--------  Data Wrangling------#--------------#--------------------#
+
+# Data Wrangling: This is the first step where inspection of data is done to make sure NULL values 
+# and missing values are detected and data replacement methods are used to replace, missing or NULL values.
+
+#-----------#------------#-------- Feature Engineering------#--------------#--------------------#
+
+
+# 1. Add a new column named time_of_day to give insight of sales in the Morning, Afternoon and Evening. 
+# This will help answer the question on which part of the day most sales are made.
+
+SELECT * FROM sales;
+
+
+# 00 am - 11:59 am - Morning
+# 12:00 pm - 3:59 pm - Afternoon
+# 4:00 pm - 11:59 pm - Evening
+
+SELECT time,
+	(CASE 
+    WHEN `time` BETWEEN '00:00:00' AND '12:00:00' THEN 'Morning'
+    WHEN `time` BETWEEN '12:01:00' AND '16:00:00' THEN 'Afternoon'
+    ELSE 'Evening'
+    END) AS time_of_day
+FROM sales;
+
+# Adding time_of_day into the sales table
+
+ALTER TABLE sales
+ADD COLUMN time_of_day VARCHAR(20);
+
+UPDATE sales
+SET time_of_day = (CASE 
+    WHEN `time` BETWEEN '00:00:00' AND '12:00:00' THEN 'Morning'
+    WHEN `time` BETWEEN '12:01:00' AND '16:00:00' THEN 'Afternoon'
+    ELSE 'Evening'
+    END);
+    
+    
+#-----------#------------#-------------#--------------#--------------------#
+
+# day_name (also a function)
+
+SELECT * FROM sales;
+
+SELECT date, DAYNAME(date) as day_name
+FROM sales;
+
+ALTER TABLE sales
+ADD COLUMN day_name VARCHAR(20);
+
+UPDATE sales
+SET day_name = DAYNAME(date);
+
+#-----------#------------#-------------#--------------#--------------------#
+
+# month_name 
+
+SELECT date, MONTHNAME(date) as month_name
+FROM sales;
+
+ALTER TABLE sales
+ADD COLUMN month_name VARCHAR(20);
+
+UPDATE sales
+SET month_name = MONTHNAME(date);
+
+SELECT * FROM sales;
+
+#-----------#------------#-------- Exploratory Data ANalysis ------#--------------#--------------------#
+
+#-------Generic Question #-------#-------#-------
+
+# 1. How many unique cities does the data have?
+
+SELECT DISTINCT(city)
+FROM sales;
+
+# 2. In which city is each branch?
+
+SELECT DISTINCT(branch)
+FROM sales;
+
+SELECT DISTINCT(city), branch
+FROM sales;
+
+#------- PRODUCT #-------#-------#-------alter
+
+# 1. How many unique product lines does the data have?
+
+SELECT * FROM sales;
+
+SELECT DISTINCT(product_line)
+FROM sales;
+
+
+# 2. What is the most common payment method?
+
+SELECT payment, COUNT(*) AS most_common_pay
+FROM sales
+GROUP BY payment
+ORDER BY most_common_pay DESC;
+
+# 3. What is the most selling product line?
+
+SELECT product_line, COUNT(*) as most_sell_product
+FROM sales
+GROUP BY product_line
+ORDER BY most_sell_product DESC;
+
+# 4. What is the total revenue by month?
+
+SELECT * FROM sales;
+
+SELECT month_name AS month, SUM(total) AS tot_rev_by_month
+FROM sales
+GROUP BY month_name
+ORDER BY tot_rev_by_month DESC;
+
+SELECT DISTINCT(month_name)
+FROM sales;
+
+# 5. What month had the largest COGS?
+
+SELECT month_name, SUM(cogs) AS largest_cogs_by_month
+FROM sales
+GROUP BY month_name
+ORDER BY largest_cogs_by_month;
+ 
+# 6. What product line had the largest revenue?
+
+SELECT product_line, SUM(total) AS largest_rev_prod_line
+FROM sales
+GROUP BY product_line
+ORDER BY largest_rev_prod_line DESC;
+
+# 7. What is the city with the largest revenue?
+
+SELECT branch, city, SUM(total) AS largest_rev_city
+FROM sales
+GROUP BY branch, city
+ORDER BY largest_rev_city DESC;
+
+SELECT * FROM sales;
+
+# 9. Fetch each product line and add a column to those product line showing "Good", "Bad". 
+# Good if its greater than average sales
+
+
+# 10. Which branch sold more products than average product sold?
+
+SELECT COUNT(*) AS branch_count
+FROM sales
+GROUP BY branch_count
+HAVING quantity > (SELECT AVG(quantity) FROM sales);
+
+SELECT branch, SUM(quantity) AS tot_quantity
+FROM sales
+GROUP BY branch
+HAVING tot_quantity > (SELECT AVG(tot_quantity) FROM sales);
+
+
+
+# 11. What is the most common product line by gender?
+
+SELECT gender, product_line, COUNT(*) AS common_prod
+FROM sales 
+GROUP BY gender, product_line
+ORDER BY gender, common_prod DESC;
+
+# 12. What is the average rating of each product line?
+
+SELECT product_line, AVG(rating) AS avg_rating
+FROM sales
+GROUP BY product_line
+ORDER BY avg_rating DESC;
+
+#------- #-------#-------#-------#-------Sales #-------#-------#-------#-------#-------#-------
+
+# 13. Number of sales made in each time of the day per weekday
+
+SELECT * FROM sales;
+
+SELECT day_name, time_of_day, COUNT(*) AS tot_sales
+FROM sales
+GROUP BY day_name, time_of_day
+ORDER BY day_name;
+
+# 14. Which of the customer types brings the most revenue?
+
+SELECT customer_type, SUM(total) AS tot_revenue
+FROM sales
+GROUP BY customer_type
+ORDER BY tot_revenue DESC;
+
+
+# 15. Which city has the largest tax percent/ VAT (Value Added Tax)?
+
+SELECT city, MAX(tax_pct) AS largest_tax_percent
+FROM sales
+GROUP BY city
+ORDER BY largest_tax_percent DESC;
+
+# 16. Which customer type pays the most in VAT?
+
+SELECT customer_type, MAX(tax_pct) AS max_cust_vat
+FROM sales
+GROUP BY customer_type
+ORDER BY max_cust_vat DESC;
+
+Customer
+How many unique customer types does the data have?
+How many unique payment methods does the data have?
+What is the most common customer type?
+Which customer type buys the most?
+What is the gender of most of the customers?
+What is the gender distribution per branch?
+Which time of the day do customers give most ratings?
+Which time of the day do customers give most ratings per branch?
+Which day fo the week has the best avg ratings?
+Which day of the week has the best average ratings per branch?
+
