@@ -1,0 +1,138 @@
+INSURANCE PROJECT
+
+
+select age, sex
+from insurance;
+
+SELECT sex, COUNT(*)
+FROM insurance
+GROUP BY sex;
+
+SELECT AVG(charges)
+FROM insurance;
+
+# 1. --------------------------------------------------------
+SELECT smoker, COUNT(smoker)
+FROM insurance
+GROUP by smoker;
+
+# 2. --------------------------------------------------------
+SELECT region, AVG(bmi) AS avg_bmi
+FROM insurance
+GROUP BY region
+ORDER BY avg_bmi DESC
+LIMIT 1;
+
+# 3. --------------------------------------------------------
+SELECT age
+FROM insurance;
+
+SELECT ROUND(age/10) *10 AS age_group, smoker,
+	MAX(charges) AS max_charges, 
+	MIN(charges) AS min_charges,
+    AVG(charges) AS avg_charges
+FROM insurance
+GROUP BY age_group, smoker
+ORDER BY age_group, smoker;
+
+
+SELECT CORR(bmi, charges) AS correlation
+FROM insurance;
+
+# 7. --------------------------------------------------------
+
+SELECT region, AVG(charges) AS avg_charges
+FROM insurance
+GROUP BY region
+ORDER BY avg_charges;
+
+# 8. --------------------------------------------------------
+
+SELECT sex, AVG(charges) AS avg_charges
+FROM insurance
+GROUP BY sex;
+
+# 7. --------------------------------------------------------
+
+SELECT children, ROUND(AVG(charges),2) AS avg_charges
+FROM insurance
+GROUP BY children
+ORDER BY avg_charges;
+
+# 11. --------------------------------------------------------
+
+SELECT smoker, AVG(age) avg_age
+FROM insurance
+GROUP BY smoker;
+
+# 12. --------------------------------------------------------
+
+SELECT
+CASE 
+WHEN BMI < 18.5 THEN 'Under weight'
+WHEN BMI >= 18.5 AND BMI < 25 THEN 'Normal weight'
+WHEN BMI >= 25 AND BMI < 30 THEN 'Over weight'
+WHEN BMI >= 30 THEN 'Obese'
+END AS bmi_category,
+COUNT(*) 
+FROM insurance
+GROUP BY bmi_category;
+
+# 13. --------------------------------------------------------
+
+SELECT ROUND(age/10) *10 as age_group, smoker, COUNT(smoker) as smoker_count
+FROM insurance
+GROUP BY age_group, smoker
+ORDER BY age_group, smoker;
+
+# 14. --------------------------------------------------------
+
+SELECT region, smoker, AVG(charges) as avg_charges
+FROM insurance
+GROUP BY region, smoker
+ORDER BY region, smoker;
+
+# 15. --------------------------------------------------------
+
+SELECT 
+    ROUND(age / 10) * 10 AS age_group,
+    (COUNT(CASE WHEN smoker = 'yes' THEN 1 END) / COUNT(*)) * 100 AS percentage_smokers
+FROM insurance
+GROUP BY age_group;
+
+# 16. --------------------------------------------------------
+
+SELECT sex, region, AVG(charges) AS avg_charges
+FROM insurance
+GROUP BY sex, region
+ORDER BY sex, region, avg_charges;
+
+# 17. --------------------------------------------------------
+
+SELECT children, smoker, AVG(charges) as avg_charges
+FROM insurance
+GROUP BY smoker, children
+ORDER BY smoker, children;
+
+# 18. --------------------------------------------------------
+
+SELECT sex, smoker, AVG(charges) AS avg_charges
+FROM insurance
+GROUP BY sex, smoker
+HAVING smoker = 'yes'
+ORDER BY sex, smoker;
+
+SELECT ROUND(age/10) * 10 AS age_group, AVG(bmi) AS avg_bmi
+FROM insurance
+GROUP BY age_group
+ORDER BY avg_bmi DESC
+LIMIT 1;
+
+SELECT
+CASE 
+WHEN bmi < 30 THEN 'Not obese'
+WHEN bmi >= 30 THEN 'Obese'
+END AS bmi_category,
+AVG(charges) AS avg_charges
+FROM insurance
+GROUP BY bmi_category;
